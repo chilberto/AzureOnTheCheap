@@ -21,3 +21,10 @@ jobs:
         azcliversion: latest
         inlineScript: |
           az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
+
+    - name: Publish app
+      uses: Azure/cli@v1.0.0
+      with:
+        azcliversion: latest
+        inlineScript: |
+          az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE2_ACCOUNT_NAME }}
