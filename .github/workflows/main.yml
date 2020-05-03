@@ -26,7 +26,7 @@ jobs:
       with:
         azcliversion: latest
         inlineScript: |          
-          az storage blob upload -f $GITHUB_WORKSPACE/web/.js/siteUS.js -c $web -n site.js --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
+          az storage blob upload -f $GITHUB_WORKSPACE/web/.js/siteUS.js -c \$web -n site.js --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
 
     - name: Publish app to UK South
       uses: Azure/cli@v1.0.0
@@ -40,7 +40,7 @@ jobs:
       with:
         azcliversion: latest
         inlineScript: |          
-          az storage blob upload -f $GITHUB_WORKSPACE/web/.js/siteUK.js -c $web -n site.js --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
+          az storage blob upload -f $GITHUB_WORKSPACE/web/.js/siteUK.js -c \$web -n site.js --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
 
     - name: Publish app to Southeast Asia
       uses: Azure/cli@v1.0.0
@@ -54,7 +54,7 @@ jobs:
       with:
         azcliversion: latest
         inlineScript: |          
-          az storage blob upload -f $GITHUB_WORKSPACE/web/.js/siteSEA.js -c $web -n site.js --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
+          az storage blob upload -f $GITHUB_WORKSPACE/web/.js/siteSEA.js -c \$web -n site.js --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
 
     - name: 'Run dotnet build'
       shell: bash
