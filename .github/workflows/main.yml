@@ -46,4 +46,5 @@ jobs:
     - name: Azure Functions Action
       uses: Azure/functions-action@v1.1.4
       with:
-        app-name: azcheapfunctionssea        
+        app-name: azcheapfunctionssea      
+        package: ./AzCheap.Functions/output
