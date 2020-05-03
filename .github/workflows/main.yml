@@ -25,7 +25,7 @@ jobs:
       with:
         azcliversion: latest
         inlineScript: |
-          az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
+          az storage blob upload-batch -s ./web -d \$web --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
 
     - name: Set Azure Function Call
       uses: jacobtomlinson/gha-find-replace@master
