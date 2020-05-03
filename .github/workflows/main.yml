@@ -5,26 +5,77 @@ on: push
 jobs:
   build_and_publish:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout the repo
       uses: actions/checkout@v1
-
+        
     - name: Login to Azure
       uses: Azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Publish app
+    - name: Set Azure Function Call
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: https://azcheapfunctionssea.azurewebsites.net/api/GetServerSideData?code=Wj9gMoAngDQH1AU0b8bvoVqNvZ8oXumOhs4hTgyZEAVyCaxQFMtfcQ==
+        replace: https://azcheapfunctionsuk.azurewebsites.net/api/GetServerSideData?code=6QTHUPyRvjCprL870alyRMzBElRzfIsVEVjgxoROY1U4mkRMZ8aEdA==        
+
+    - name: Publish app to Central US
       uses: Azure/cli@v1.0.0
       with:
         azcliversion: latest
         inlineScript: |
-          az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
+          az storage blob upload-batch -s ./web -d \$web --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
 
-    - name: Publish app
+    - name: Set Azure Function Call
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "https://azcheapfunctionssea.azurewebsites.net/api/GetServerSideData?code=Wj9gMoAngDQH1AU0b8bvoVqNvZ8oXumOhs4hTgyZEAVyCaxQFMtfcQ=="
+        replace: "https://azcheapfunctionsuk.azurewebsites.net/api/GetServerSideData?code=6QTHUPyRvjCprL870alyRMzBElRzfIsVEVjgxoROY1U4mkRMZ8aEdA=="
+        include: "./web/site.js"
+
+    - name: Publish app to UK South
       uses: Azure/cli@v1.0.0
       with:
         azcliversion: latest
         inlineScript: |
           az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE2_ACCOUNT_NAME }}
+
+    - name: Set Azure Function Call
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "https://azcheapfunctionssea.azurewebsites.net/api/GetServerSideData?code=Wj9gMoAngDQH1AU0b8bvoVqNvZ8oXumOhs4hTgyZEAVyCaxQFMtfcQ=="
+        replace: "https://azcheapfunctionsuk.azurewebsites.net/api/GetServerSideData?code=6QTHUPyRvjCprL870alyRMzBElRzfIsVEVjgxoROY1U4mkRMZ8aEdA=="
+        include: "./web/site.js"
+
+    - name: Publish app to Southeast Asia
+      uses: Azure/cli@v1.0.0
+      with:
+        azcliversion: latest
+        inlineScript: |
+          az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE3_ACCOUNT_NAME }}
+
+    - name: 'Run dotnet build'
+      shell: bash
+      run: |        
+        pushd ./AzCheap.Functions
+        dotnet build --configuration Release --output ./output
+        popd
+        
+    - name: Azure Functions Central US
+      uses: Azure/functions-action@v1.1.4
+      with:
+        app-name: azcheapfunctionsus     
+        package: ./AzCheap.Functions/output
+
+    - name: Azure Functions UK South
+      uses: Azure/functions-action@v1.1.4
+      with:
+        app-name: azcheapfunctionsuk      
+        package: ./AzCheap.Functions/output
+
+    - name: Azure Functions Southeast Asia
+      uses: Azure/functions-action@v1.1.4
+      with:
+        app-name: azcheapfunctionssea      
+        package: ./AzCheap.Functions/output
