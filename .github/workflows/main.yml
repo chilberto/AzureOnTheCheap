@@ -15,21 +15,21 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Publish app
+    - name: Publish app to Central US
       uses: Azure/cli@v1.0.0
       with:
         azcliversion: latest
         inlineScript: |
           az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
 
-    - name: Publish app
+    - name: Publish app to UK South
       uses: Azure/cli@v1.0.0
       with:
         azcliversion: latest
         inlineScript: |
           az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE2_ACCOUNT_NAME }}
           
-    - name: Publish app
+    - name: Publish app to Southeast Asia
       uses: Azure/cli@v1.0.0
       with:
         azcliversion: latest
@@ -43,7 +43,19 @@ jobs:
         dotnet build --configuration Release --output ./output
         popd
         
-    - name: Azure Functions Action
+    - name: Azure Functions Central US
+      uses: Azure/functions-action@v1.1.4
+      with:
+        app-name: azcheapfunctionsus     
+        package: ./AzCheap.Functions/output
+
+    - name: Azure Functions UK South
+      uses: Azure/functions-action@v1.1.4
+      with:
+        app-name: azcheapfunctionsuk      
+        package: ./AzCheap.Functions/output
+
+    - name: Azure Functions Southeast Asia
       uses: Azure/functions-action@v1.1.4
       with:
         app-name: azcheapfunctionssea      
