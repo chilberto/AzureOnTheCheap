@@ -28,3 +28,18 @@ jobs:
         azcliversion: latest
         inlineScript: |
           az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE2_ACCOUNT_NAME }}
+          
+    - name: Publish app
+      uses: Azure/cli@v1.0.0
+      with:
+        azcliversion: latest
+        inlineScript: |
+          az storage blob upload-batch -s $GITHUB_WORKSPACE/web -d \$web --account-name ${{ secrets.STORAGE3_ACCOUNT_NAME }}
+    
+    - name: Azure Functions Action
+      uses: Azure/functions-action@v1.1.4
+      with:
+    # Name of the Azure Function App
+        app-name: azcheapfunctionssea
+        # Path to package or folder. *.zip or a folder to deploy
+        package: $GITHUB_WORKSPACE/AzCheap.Functions
