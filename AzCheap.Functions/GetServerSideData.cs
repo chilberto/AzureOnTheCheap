@@ -12,9 +12,7 @@ using Microsoft.Azure.Cosmos.Table;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using Microsoft.OData.UriParser;
 using Newtonsoft.Json;
-using System.Runtime.InteropServices;
 using System.IO;
 
 namespace AzCheap.Functions
@@ -22,23 +20,21 @@ namespace AzCheap.Functions
     public static class GetServerSideData
     {
         [FunctionName("GetServerSideData")]
-        public async static Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-                                                          ILogger log)
-        {
-
-            log.LogInformation("C# HTTP trigger function processed a request." + Environment.GetEnvironmentVariable("LocalSettingValue"));
+        public async static Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log)
+        {            
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var model = JsonConvert.DeserializeObject<DataTableAjaxPostModel>(requestBody);
 
-            var cache = ConnectionMultiplexer.Connect("52.141.218.12").GetDatabase();
+            var cache = ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("RedisCache")).GetDatabase();
             var totalRecords = await cache.SortedSetLengthAsync("AccountData");
 
             // if the data has not been loaded into Redis
             if (totalRecords == 0)
             {
+                log.LogInformation($"AccountData no loaded in cache. Retrieving records from storage.");
                 // retrieve from table storage
-                var account = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=cheapstorageus;AccountKey=2IaxLhniogDP0N2cEeT9Bc27rVvRsNrZUF7tTHRro8Qvp52mmwpPdhcnhlHhB/oTtDq6dux2Doj7gQEjdOTk5g==;TableEndpoint=https://cheapstorageus.table.core.windows.net/;");
+                var account = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("TableStorageConnectionString"));
 
                 var tableClient = account.CreateCloudTableClient();
                 var table = tableClient.GetTableReference("AccountData");
@@ -57,7 +53,8 @@ namespace AzCheap.Functions
                         items.AddRange(resultSegment.Results);
                     } while (token != null);
 
-                    //await cache.SetAddAsync("AccountData", items.Select(i => new RedisValue(JsonConvert.SerializeObject(i))).ToArray());                    
+                    log.LogInformation($"Saving AccountData to cache.");
+
                     await cache.SortedSetAddAsync("AccountData", items.Select(i => new SortedSetEntry(JsonConvert.SerializeObject(i), int.Parse(i.RowKey))).ToArray());
 
                     totalRecords = await cache.SortedSetLengthAsync("AccountData");
@@ -68,7 +65,8 @@ namespace AzCheap.Functions
                 }
             }
 
-            
+            log.LogInformation($"Retrieving range from cache.");
+
             var accountData = await cache.SortedSetRangeByScoreAsync("AccountData", model.start, model.start + model.length);
 
             var response = new 
@@ -79,6 +77,7 @@ namespace AzCheap.Functions
                 data = accountData
             };
 
+            log.LogInformation($"Returning successful response for {accountData.Length} out of {totalRecords} records.");
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(JsonConvert.SerializeObject(response), Encoding.UTF8, "application/json")

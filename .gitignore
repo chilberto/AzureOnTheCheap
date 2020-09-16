@@ -6,3 +6,4 @@
 /.vs/AzureOnTheCheap/config/applicationhost.config
 /.vs/AzureOnTheCheap/v16/.suo
 /.vs
+/web/.vs/web/config/applicationhost.config

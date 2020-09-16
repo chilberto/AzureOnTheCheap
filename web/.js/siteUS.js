@@ -1,8 +1,14 @@
 $(document).ready(function () {
-    $('#example').DataTable({        
-        ajax: {
+    $('#example').DataTable({
+        "proccessing": true,
+        "serverSide": true,
+        "ajax": {
             url: "https://azcheapfunctionsus.azurewebsites.net/api/GetServerSideData?code=RUI1TR61Q7AoaTOQgP8au/iXIUbng5d1HhCogCQeJOTxqTMUzNVPgw==",
-            dataType: 'json'
+            type: "POST",
+            contentType: "application/json",
+            data: function (d) {
+                return JSON.stringify(d);
+            }
         }
     });
 });
