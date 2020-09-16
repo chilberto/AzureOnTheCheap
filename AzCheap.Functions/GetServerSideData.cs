@@ -26,16 +26,14 @@ namespace AzCheap.Functions
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var model = JsonConvert.DeserializeObject<DataTableAjaxPostModel>(requestBody);
 
-            var cache = ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("RedisCache")).GetDatabase();
-            //var cache = ConnectionMultiplexer.Connect("52.141.218.12").GetDatabase();
+            var cache = ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("RedisCache")).GetDatabase();            
             var totalRecords = await cache.SortedSetLengthAsync("AccountData");
 
             // if the data has not been loaded into Redis
             if (totalRecords == 0)
             {
                 log.LogInformation($"AccountData no loaded in cache. Retrieving records from storage.");
-                // retrieve from table storage
-                //var account = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=cheapstorageus;AccountKey=2IaxLhniogDP0N2cEeT9Bc27rVvRsNrZUF7tTHRro8Qvp52mmwpPdhcnhlHhB/oTtDq6dux2Doj7gQEjdOTk5g==;TableEndpoint=https://cheapstorageus.table.core.windows.net/;");
+                // retrieve from table storage                
                 var account = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("TableStorageConnectionString"));
 
                 var tableClient = account.CreateCloudTableClient();
