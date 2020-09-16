@@ -32,7 +32,7 @@ namespace AzCheap.Functions
             // if the data has not been loaded into Redis
             if (totalRecords == 0)
             {
-                log.LogInformation($"AccountData no loaded in cache. Retrieving records from storage.");
+                log.LogInformation($"AccountData is not loaded in cache. Retrieving records from storage.");
                 // retrieve from table storage                
                 var account = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("TableStorageConnectionString"));
 
@@ -53,7 +53,7 @@ namespace AzCheap.Functions
                         items.AddRange(resultSegment.Results);
                     } while (token != null);
 
-                    log.LogInformation($"Saving AccountData to cache.");
+                    log.LogInformation($"Saving {items.Count} AccountData records to cache.");
 
                     await cache.SortedSetAddAsync("AccountData", items.Select(i => new SortedSetEntry(JsonConvert.SerializeObject(i), int.Parse(i.RowKey))).ToArray());
 
@@ -65,7 +65,7 @@ namespace AzCheap.Functions
                 }
             }
 
-            log.LogInformation($"Retrieving range from cache.");
+            log.LogInformation($"Retrieving {model.length} records from cache.");
 
             var accountData = await cache.SortedSetRangeByScoreAsync("AccountData", model.start, model.start + model.length);
 
