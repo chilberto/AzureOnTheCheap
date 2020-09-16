@@ -27,6 +27,7 @@ namespace AzCheap.Functions
             var model = JsonConvert.DeserializeObject<DataTableAjaxPostModel>(requestBody);
 
             var cache = ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("RedisCache")).GetDatabase();
+            //var cache = ConnectionMultiplexer.Connect("52.141.218.12").GetDatabase();
             var totalRecords = await cache.SortedSetLengthAsync("AccountData");
 
             // if the data has not been loaded into Redis
@@ -34,6 +35,7 @@ namespace AzCheap.Functions
             {
                 log.LogInformation($"AccountData no loaded in cache. Retrieving records from storage.");
                 // retrieve from table storage
+                //var account = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=cheapstorageus;AccountKey=2IaxLhniogDP0N2cEeT9Bc27rVvRsNrZUF7tTHRro8Qvp52mmwpPdhcnhlHhB/oTtDq6dux2Doj7gQEjdOTk5g==;TableEndpoint=https://cheapstorageus.table.core.windows.net/;");
                 var account = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("TableStorageConnectionString"));
 
                 var tableClient = account.CreateCloudTableClient();
@@ -74,7 +76,19 @@ namespace AzCheap.Functions
                 draw = model.draw, 
                 recordsTotal = totalRecords, 
                 recordsFiltered = totalRecords,
-                data = accountData.ToStringArray().Select(d => JsonConvert.DeserializeObject(d))
+                data = accountData.Select(d =>
+                {
+                    var data = JsonConvert.DeserializeObject<AccountData>(d);
+                    return new
+                    {
+                        data.FirstName,
+                        data.LastName,
+                        data.Office,
+                        data.Position,
+                        data.Salary,
+                        data.StartDate
+                    };
+                }).ToList()
             };
 
             log.LogInformation($"Returning successful response for {accountData.Length} out of {totalRecords} records.");
