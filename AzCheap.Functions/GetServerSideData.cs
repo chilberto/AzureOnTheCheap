@@ -79,7 +79,7 @@ namespace AzCheap.Functions
                 data = accountData.Select(d =>
                 {
                     var data = JsonConvert.DeserializeObject<AccountData>(d);
-                    return new
+                    return new string[]
                     {
                         data.FirstName,
                         data.LastName,
