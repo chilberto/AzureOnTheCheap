@@ -74,7 +74,7 @@ namespace AzCheap.Functions
                 draw = model.draw, 
                 recordsTotal = totalRecords, 
                 recordsFiltered = totalRecords,
-                data = accountData
+                data = accountData.ToStringArray().Select(d => JsonConvert.DeserializeObject(d))
             };
 
             log.LogInformation($"Returning successful response for {accountData.Length} out of {totalRecords} records.");
